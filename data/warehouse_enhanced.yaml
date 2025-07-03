@@ -1,0 +1,13 @@
+names:
+- rack
+- pallet
+- empty_slot
+- occupied_slot
+- obstruction
+- forklift
+- person
+nc: 7
+path: data
+test: images/test
+train: images/train
+val: images/val

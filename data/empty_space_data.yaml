@@ -1,0 +1,7 @@
+
+names:
+- empty_space
+nc: 1
+path: C:\Users\krish\OneDrive\Desktop\Computer_vision_warehouse_project\data
+train: images/train
+val: images/val

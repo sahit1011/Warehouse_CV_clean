@@ -1,0 +1,28 @@
+# Ignore video files
+video/
+*.mp4
+*.avi
+*.mov
+
+# Ignore model weights
+models/**/*.pt
+*.pt
+
+# Ignore Excel and database files
+*.xlsx
+*.db
+
+# Ignore output and exports
+output/
+exports/
+
+# Ignore image files (optional, if not needed in repo)
+*.jpg
+*.jpeg
+*.png
+
+# Ignore cache and annotation files
+data/labels/*.cache
+
+# Ignore calibration results
+calibration/results/ 

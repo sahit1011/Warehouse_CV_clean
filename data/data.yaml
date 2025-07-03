@@ -1,0 +1,8 @@
+names:
+- empty_slot
+- occupied_slot
+- rack
+nc: 3
+path: C:\Users\krish\OneDrive\Desktop\Computer_vision_warehouse_project\data
+train: images/train
+val: images/val

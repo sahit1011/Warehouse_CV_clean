@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Free Space Measurement System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .tabs {
+            display: flex;
+            background: #34495e;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            background: transparent;
+            font-size: 1.1em;
+        }
+        
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab.active {
+            background: white;
+            color: #34495e;
+            font-weight: bold;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border-left: 5px solid #3498db;
+        }
+        
+        .form-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .data-table th {
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            color: white;
+            font-weight: 600;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            transition: width 0.3s ease;
+        }
+        
+        .checklist {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .checklist-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid;
+        }
+        
+        .alert-info {
+            background: #e8f4f8;
+            color: #2c3e50;
+            border-color: #3498db;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 Warehouse Free Space Measurement System</h1>
+            <p>Systematic tracking and documentation of warehouse storage capacity</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('overview')">📊 Overview</button>
+            <button class="tab" onclick="switchTab('data-entry')">📝 Data Entry</button>
+            <button class="tab" onclick="switchTab('analysis')">📈 Analysis</button>
+            <button class="tab" onclick="switchTab('checklist')">✅ Checklist</button>
+        </div>
+        
+        <div class="content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Total Racks Surveyed</h4>
+                        <div class="number" id="totalRacks">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="rackProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Available Pallet Slots</h4>
+                        <div class="number" id="availableSlots">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="availabilityProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Storage Utilization</h4>
+                        <div class="number" id="utilization">0%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="utilizationProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Aisles Completed</h4>
+                        <div class="number" id="aislesCompleted">0</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="aisleProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>📋 Current Status:</strong> Use the Data Entry tab to record warehouse measurements. The system will automatically calculate free space and generate reports.
+                </div>
+                
+                <table class="data-table" id="overviewTable">
+                    <thead>
+                        <tr>
+                            <th>Aisle</th>
+                            <th>Rack ID</th>
+                            <th>Total Capacity</th>
+                            <th>Occupied</th>
+                            <th>Free Space</th>
+                            <th>Utilization %</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="overviewTableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Data Entry Tab -->
+            <div id="data-entry" class="tab-content">
+                <div class="form-section">
+                    <h3>📦 Rack/Shelf Measurement Entry</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="aisleNumber">Aisle Number:</label>
+                            <input type="text" id="aisleNumber" placeholder="e.g., A-1, B-2">
+                        </div>
+                        <div class="form-group">
+                            <label for="rackId">Rack/Shelf ID:</label>
+                            <input type="text" id="rackId" placeholder="e.g., R-001, S-045">
+                        </div>
+                        <div class="form-group">
+                            <label for="rackType">Storage Type:</label>
+                            <select id="rackType">
+                                <option value="main-rack">Main Rack (3 pallets)</option>
+                                <option value="small-shelf">Small Shelf</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="totalCapacity">Total Capacity:</label>
+                            <input type="number" id="totalCapacity" placeholder="e.g., 3 (pallets)">
+                        </div>
+                        <div class="form-group">
+                            <label for="occupiedSpace">Occupied Space:</label>
+                            <input type="number" id="occupiedSpace" placeholder="e.g., 1 (pallets)">
+                        </div>
+                        <div class="form-group">
+                            <label for="freeSpace">Free Space:</label>
+                            <input type="number" id="freeSpace" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="condition">Condition:</label>
+                            <select id="condition">
+                                <option value="good">Good</option>
+                                <option value="partially-blocked">Partially Blocked</option>
+                                <option value="damaged">Damaged</option>
+                                <option value="maintenance">Under Maintenance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes">Notes:</label>
+                            <textarea id="notes" rows="3" placeholder="Additional observations..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="addEntry()">➕ Add Entry</button>
+                    <button class="btn" onclick="clearForm()">🔄 Clear Form</button>
+                </div>
+                
+                <div class="form-section">
+                    <h3>📊 Current Session Data</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Aisle</th>
+                                <th>Rack ID</th>
+                                <th>Type</th>
+                                <th>Capacity</th>
+                                <th>Occupied</th>
+                                <th>Free</th>
+                                <th>Condition</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Entries will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button class="btn btn-success" onclick="exportToExcel()">📥 Export to Excel</button>
+                <button class="btn" onclick="generateReport()">📄 Generate Report</button>
+            </div>
+            
+            <!-- Analysis Tab -->
+            <div id="analysis" class="tab-content">
+                <div class="alert alert-warning">
+                    <strong>⚠️ Analysis Tools:</strong> This section provides insights based on your recorded data.
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h4>Highest Utilization Aisle</h4>
+                        <div class="number" id="highestUtilAisle">-</div>
+                        <p id="highestUtilPercent">0%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Most Available Space</h4>
+                        <div class="number" id="mostAvailableAisle">-</div>
+                        <p id="mostAvailableCount">0 slots</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Damaged/Blocked Racks</h4>
+                        <div class="number" id="damagedRacks">0</div>
+                        <p>Requiring attention</p>
+                    </div>
+                    <div class="stat-card">
+                        <h4>Total Free Capacity</h4>
+                        <div class="number" id="totalFreeCapacity">0</div>
+                        <p>Available pallet slots</p>
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>📈 Capacity Analysis by Aisle</h3>
+                    <div id="aisleAnalysis"></div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>🚨 Issues Requiring Attention</h3>
+                    <div id="issuesList"></div>
+                </div>
+            </div>
+            
+            <!-- Checklist Tab -->
+            <div id="checklist" class="tab-content">
+                <div class="checklist">
+                    <h3>✅ Video Analysis Checklist</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check1">
+                        <label for="check1">Review surveillance footage for all warehouse areas</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check2">
+                        <label for="check2">Identify and mark all main racks (3-pallet capacity)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check3">
+                        <label for="check3">Catalog all small shelves and their capacity</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check4">
+                        <label for="check4">Note partially occupied racks with exact counts</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check5">
+                        <label for="check5">Document any obstructions or access issues</label>
+                    </div>
+                </div>
+                
+                <div class="checklist">
+                    <h3>📏 Measurement Quality Control</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check6">
+                        <label for="check6">Verify measurement units are consistent throughout</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check7">
+                        <label for="check7">Cross-validate video observations with physical spot checks</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check8">
+                        <label for="check8">Double-check calculations for free space</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check9">
+                        <label for="check9">Confirm all aisle numbers and rack IDs are accurate</label>
+                    </div>
+                </div>
+                
+                <div class="checklist">
+                    <h3>📊 Documentation Requirements</h3>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check10">
+                        <label for="check10">Excel spreadsheet with all required columns completed</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check11">
+                        <label for="check11">Storage capacity overview summary prepared</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check12">
+                        <label for="check12">Exception cases documented with detailed notes</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="check13">
+                        <label for="check13">Final data validation and quality review completed</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Define API Base URL
+        const API_BASE_URL = 'http://localhost:5001';
+
+        // Data storage
+        let warehouseData = [];
+        
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+            
+            if (tabName === 'overview' || tabName === 'analysis') {
+                updateAnalytics();
+            }
+        }
+        
+        // Auto-calculate free space
+        document.getElementById('totalCapacity').addEventListener('input', calculateFreeSpace);
+        document.getElementById('occupiedSpace').addEventListener('input', calculateFreeSpace);
+        
+        // Auto-fill capacity based on rack type
+        document.getElementById('rackType').addEventListener('change', function() {
+            const rackType = this.value;
+            const capacityInput = document.getElementById('totalCapacity');
+            
+            if (rackType === 'main-rack') {
+                capacityInput.value = 3;
+            } else if (rackType === 'small-shelf') {
+                capacityInput.value = 1;
+            }
+            calculateFreeSpace();
+        });
+        
+        function calculateFreeSpace() {
+            const total = parseInt(document.getElementById('totalCapacity').value) || 0;
+            const occupied = parseInt(document.getElementById('occupiedSpace').value) || 0;
+            const free = Math.max(0, total - occupied);
+            document.getElementById('freeSpace').value = free;
+        }
+        
+        async function addEntry() {
+            const entry = {
+                aisle: document.getElementById('aisleNumber').value,
+                rackId: document.getElementById('rackId').value,
+                rackType: document.getElementById('rackType').value,
+                totalCapacity: parseInt(document.getElementById('totalCapacity').value) || 0,
+                occupiedSpace: parseInt(document.getElementById('occupiedSpace').value) || 0,
+                freeSpace: parseInt(document.getElementById('freeSpace').value) || 0,
+                condition: document.getElementById('condition').value,
+                notes: document.getElementById('notes').value,
+                timestamp: new Date().toLocaleString()
+            };
+            
+            if (!entry.aisle || !entry.rackId) {
+                alert('Please fill in Aisle Number and Rack ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(entry)
+                });
+
+                if (response.ok) {
+                    clearForm();
+                    await loadInitialData();
+                } else {
+                    alert('Error adding entry. Please check the backend.');
+                }
+            } catch (error) {
+                console.error('Failed to add entry:', error);
+                alert('Failed to connect to the backend. Is it running?');
+            }
+        }
+        
+        function clearForm() {
+            document.getElementById('aisleNumber').value = '';
+            document.getElementById('rackId').value = '';
+            document.getElementById('rackType').value = 'main-rack';
+            document.getElementById('totalCapacity').value = '';
+            document.getElementById('occupiedSpace').value = '';
+            document.getElementById('freeSpace').value = '';
+            document.getElementById('condition').value = 'good';
+            document.getElementById('notes').value = '';
+        }
+        
+        function updateDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            const overviewTbody = document.getElementById('overviewTableBody');
+            
+            tbody.innerHTML = '';
+            overviewTbody.innerHTML = '';
+            
+            warehouseData.forEach(entry => {
+                const utilization = entry.totalCapacity > 0 ? 
+                    ((entry.occupiedSpace / entry.totalCapacity) * 100).toFixed(1) : 0;
+                
+                const dataRow = `
+                    <tr>
+                        <td>${entry.aisle}</td>
+                        <td>${entry.rackId}</td>
+                        <td>${entry.rackType}</td>
+                        <td>${entry.totalCapacity}</td>
+                        <td>${entry.occupiedSpace}</td>
+                        <td>${entry.freeSpace}</td>
+                        <td>${entry.condition}</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="removeEntry(${entry.id})">🗑️ Delete</button>
+                        </td>
+                    </tr>`;
+                tbody.innerHTML += dataRow;
+                
+                const overviewRow = `
+                    <tr>
+                        <td>${entry.aisle}</td>
+                        <td>${entry.rackId}</td>
+                        <td>${entry.totalCapacity}</td>
+                        <td>${entry.occupiedSpace}</td>
+                        <td>${entry.freeSpace}</td>
+                        <td>${utilization}%</td>
+                        <td>${entry.condition}</td>
+                    </tr>`;
+                overviewTbody.innerHTML += overviewRow;
+            });
+        }
+        
+        async function removeEntry(entryId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/delete/${entryId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    await loadInitialData(); // Reload data from backend
+                } else {
+                    alert('Error deleting entry. Please check the backend.');
+                }
+            } catch (error) {
+                console.error('Failed to delete entry:', error);
+                alert('Failed to connect to the backend. Is it running?');
+            }
+        }
+        
+        function updateAnalytics() {
+            const totalRacks = warehouseData.length;
+            const totalCapacity = warehouseData.reduce((sum, entry) => sum + entry.totalCapacity, 0);
+            const totalOccupied = warehouseData.reduce((sum, entry) => sum + entry.occupiedSpace, 0);
+            const totalFree = warehouseData.reduce((sum, entry) => sum + entry.freeSpace, 0);
+            const utilization = totalCapacity > 0 ? ((totalOccupied / totalCapacity) * 100).toFixed(1) : 0;
+            
+            document.getElementById('totalRacks').textContent = totalRacks;
+            document.getElementById('availableSlots').textContent = totalFree;
+            document.getElementById('utilization').textContent = utilization + '%';
+            
+            const uniqueAisles = [...new Set(warehouseData.map(entry => entry.aisle))].length;
+            document.getElementById('aislesCompleted').textContent = uniqueAisles;
+            
+            document.getElementById('rackProgress').style.width = Math.min(100, (totalRacks / 50) * 100) + '%';
+            document.getElementById('availabilityProgress').style.width = Math.min(100, (totalFree / 100) * 100) + '%';
+            document.getElementById('utilizationProgress').style.width = utilization + '%';
+            document.getElementById('aisleProgress').style.width = Math.min(100, (uniqueAisles / 10) * 100) + '%';
+            
+            document.getElementById('totalFreeCapacity').textContent = totalFree;
+            
+            const damagedCount = warehouseData.filter(entry => 
+                ['damaged', 'partially-blocked', 'maintenance'].includes(entry.condition)
+            ).length;
+            document.getElementById('damagedRacks').textContent = damagedCount;
+            
+            updateAisleAnalysis();
+            updateIssuesList();
+        }
+        
+        function updateAisleAnalysis() {
+            const aisleData = {};
+            
+            warehouseData.forEach(entry => {
+                if (!aisleData[entry.aisle]) {
+                    aisleData[entry.aisle] = { totalCapacity: 0, occupied: 0, free: 0, racks: 0 };
+                }
+                aisleData[entry.aisle].totalCapacity += entry.totalCapacity;
+                aisleData[entry.aisle].occupied += entry.occupiedSpace;
+                aisleData[entry.aisle].free += entry.freeSpace;
+                aisleData[entry.aisle].racks += 1;
+            });
+
+            let analysisHtml = '<table class="data-table"><thead><tr><th>Aisle</th><th>Racks</th><th>Total Capacity</th><th>Occupied</th><th>Free</th><th>Utilization</th></tr></thead><tbody>';
+            let highestUtil = 0, highestAisle = '-', mostAvailable = 0, mostAvailableAisle = '-';
+
+            Object.keys(aisleData).forEach(aisle => {
+                const data = aisleData[aisle];
+                const utilization = data.totalCapacity > 0 ? ((data.occupied / data.totalCapacity) * 100).toFixed(1) : 0;
+                analysisHtml += `<tr><td>${aisle}</td><td>${data.racks}</td><td>${data.totalCapacity}</td><td>${data.occupied}</td><td>${data.free}</td><td>${utilization}%</td></tr>`;
+                
+                if (parseFloat(utilization) > highestUtil) {
+                    highestUtil = parseFloat(utilization);
+                    highestAisle = aisle;
+                }
+                if (data.free > mostAvailable) {
+                    mostAvailable = data.free;
+                    mostAvailableAisle = aisle;
+                }
+            });
+            
+            analysisHtml += '</tbody></table>';
+            document.getElementById('aisleAnalysis').innerHTML = analysisHtml;
+            document.getElementById('highestUtilAisle').textContent = highestAisle;
+            document.getElementById('highestUtilPercent').textContent = highestUtil.toFixed(1) + '%';
+            document.getElementById('mostAvailableAisle').textContent = mostAvailableAisle;
+            document.getElementById('mostAvailableCount').textContent = mostAvailable + ' slots';
+        }
+        
+        function updateIssuesList() {
+            const issues = warehouseData.filter(entry => 
+                entry.condition !== 'good' || (entry.notes && (entry.notes.toLowerCase().includes('issue') || entry.notes.toLowerCase().includes('problem') || entry.notes.toLowerCase().includes('damage')))
+            );
+            
+            let issuesHtml = issues.length === 0 ? '<div class="alert alert-info">✅ No issues detected</div>' : '<div class="alert alert-warning">⚠️ Issues found:</div>';
+            issues.forEach(issue => {
+                issuesHtml += `<div class="checklist-item"><strong>${issue.aisle} - ${issue.rackId}:</strong> ${issue.condition} ${issue.notes ? '- ' + issue.notes : ''}</div>`;
+            });
+            
+            document.getElementById('issuesList').innerHTML = issuesHtml;
+        }
+        
+        function exportToCSV() {
+            if (warehouseData.length === 0) {
+                alert('No data to export');
+                return;
+            }
+            
+            const headers = ['Aisle Number', 'Rack/Shelf ID', 'Total Capacity', 'Occupied Space', 'Free Space', 'Notes', 'Condition', 'Timestamp'];
+            const csvContent = [
+                headers.join(','),
+                ...warehouseData.map(entry => [
+                    entry.aisle,
+                    entry.rackId,
+                    entry.totalCapacity,
+                    entry.occupiedSpace,
+                    entry.freeSpace,
+                    `"${entry.notes}"`,
+                    entry.condition,
+                    entry.timestamp
+                ].join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `warehouse_free_space_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        async function exportToExcel() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/export`);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `warehouse_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    alert('Error exporting to Excel. Please check the backend.');
+                }
+            } catch (error) {
+                console.error('Failed to export to Excel:', error);
+                alert('Failed to connect to the backend. Is it running?');
+            }
+        }
+
+        function generateReport() {
+            if (warehouseData.length === 0) {
+                alert('No data available for report generation');
+                return;
+            }
+            
+            const totalRacks = warehouseData.length;
+            const totalCapacity = warehouseData.reduce((sum, entry) => sum + entry.totalCapacity, 0);
+            const totalOccupied = warehouseData.reduce((sum, entry) => sum + entry.occupiedSpace, 0);
+            const totalFree = warehouseData.reduce((sum, entry) => sum + entry.freeSpace, 0);
+            const utilization = totalCapacity > 0 ? ((totalOccupied / totalCapacity) * 100).toFixed(1) : 0;
+            const uniqueAisles = [...new Set(warehouseData.map(entry => entry.aisle))];
+            
+            const reportContent = `
+WAREHOUSE FREE SPACE MEASUREMENT REPORT
+Generated: ${new Date().toLocaleString()}
+
+EXECUTIVE SUMMARY
+===============
+Total Racks Surveyed: ${totalRacks}
+Total Storage Capacity: ${totalCapacity} pallet slots
+Currently Occupied: ${totalOccupied} pallet slots
+Available Free Space: ${totalFree} pallet slots
+Overall Utilization: ${utilization}%
+Aisles Surveyed: ${uniqueAisles.length} (${uniqueAisles.join(', ')})
+
+DETAILED BREAKDOWN
+=================
+${warehouseData.map(entry => `
+Aisle: ${entry.aisle} | Rack: ${entry.rackId}
+Capacity: ${entry.totalCapacity} | Occupied: ${entry.occupiedSpace} | Free: ${entry.freeSpace}
+Condition: ${entry.condition}
+${entry.notes ? 'Notes: ' + entry.notes : ''}
+---`).join('\n')}
+
+RECOMMENDATIONS
+==============
+1. Monitor racks with utilization above 90%
+2. Address damaged or blocked racks immediately
+3. Consider redistributing inventory to optimize space usage
+4. Schedule regular capacity reviews
+
+Report generated by Warehouse Free Space Measurement System
+            `;
+            
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `warehouse_report_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        
+        async function loadInitialData() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/data`);
+                warehouseData = await response.json();
+                updateDataTable();
+                updateAnalytics();
+            } catch (error) {
+                console.error('Failed to load initial data:', error);
+                alert('Could not connect to the backend. Please ensure it is running and accessible.');
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            calculateFreeSpace();
+            loadInitialData();
+        });
+    </script>
+</body>
+</html>
